@@ -1,7 +1,9 @@
-# Go-tools
+[![Build Status](https://drone.io/github.com/astropay/go-tools/status.png)](https://drone.io/github.com/astropay/go-tools/latest)
+
+# Go-Tools
 
 This library has some usefull functions that an be used in any project. If you have some piece of code you keep
-reproducing everywhere, consider moving it here :-)
+reproducing everywhere, consider moving it here.
 
 ## Documentation
 
