@@ -6,6 +6,7 @@ package common
 
 import (
 	"errors"
+	"math/rand"
 	"reflect"
 	"regexp"
 	"unsafe"
@@ -71,4 +72,11 @@ func UpdateStructFromMap(destination interface{}, source map[string]interface{})
 	}
 
 	return
+}
+
+// Random generates a random number between min and max. Keep in mind that
+// randome seed must be initialized before. Example:
+// 		rand.Seed(time.Now().Unix())
+func Random(min, max int) int {
+	return rand.Intn(max-min) + min
 }
