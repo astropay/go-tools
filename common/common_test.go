@@ -1,7 +1,9 @@
 package common
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -73,6 +75,23 @@ func TestUpdateStructFields(t *testing.T) {
 
 	if err := UpdateStructFromMap(notAStruct, newData3); err == nil {
 		t.Errorf("UpdateStructFields() should have failed with ErrNotStruct")
+	}
+
+}
+
+func TestRandom(t *testing.T) {
+	rand.Seed(time.Now().Unix())
+
+	if test := Random(1, 10); test < 1 || test > 10 {
+		t.Errorf("Random number should be between 1 and 10: %v", test)
+	}
+
+	if test := Random(1, 100); test < 1 || test > 100 {
+		t.Errorf("Random number should be between 1 and 100: %v", test)
+	}
+
+	if test := Random(12345, 989912); test < 12345 || test > 989912 {
+		t.Errorf("Random number should be between 12345 and 989912: %v", test)
 	}
 
 }
