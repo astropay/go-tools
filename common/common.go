@@ -12,6 +12,8 @@ import (
 	"unsafe"
 )
 
+var letterAndNumberRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
 // IsEmailAddress returns true if str seems to be an email address
 func IsEmailAddress(str string) bool {
 	reg := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
@@ -74,9 +76,20 @@ func UpdateStructFromMap(destination interface{}, source map[string]interface{})
 	return
 }
 
-// Random generates a random number between min and max. Keep in mind that
-// randome seed must be initialized before. Example:
+// Random generates a random number between min and max.
+// Keep in mind that random seed must be initialized before. Example:
 // 		rand.Seed(time.Now().Unix())
 func Random(min, max int) int {
 	return rand.Intn(max-min) + min
+}
+
+// RandomString generates a random string of the specified length.
+// Keep in mind that random seed must be initialized before. Example:
+// 		rand.Seed(time.Now().Unix())
+func RandomString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterAndNumberRunes[rand.Intn(len(letterAndNumberRunes))]
+	}
+	return string(b)
 }
