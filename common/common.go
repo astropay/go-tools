@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"reflect"
 	"regexp"
+	"strings"
 	"unsafe"
 )
 
@@ -92,4 +93,32 @@ func RandomString(n int) string {
 		b[i] = letterAndNumberRunes[rand.Intn(len(letterAndNumberRunes))]
 	}
 	return string(b)
+}
+
+// MaskString creates a mask with `maskChar` for the indicated string `s`.
+// If noMaskLeft and noMaskRight equals -1, then all the string is masked.
+func MaskString(s string, noMaskLeft, noMaskRight int, maskChar string) (masked string) {
+
+	// return all masked string if applies
+	if len(s) <= noMaskLeft+noMaskRight || (noMaskLeft == -1 && noMaskRight == -1) {
+		masked = strings.Repeat(maskChar, len(s))
+		return
+	}
+
+	if noMaskLeft == -1 {
+		noMaskLeft = 0
+	}
+
+	if noMaskRight == -1 {
+		noMaskRight = 0
+	}
+
+	sLen := len(s)
+
+	leftStr := s[:noMaskLeft]
+	rightStr := s[sLen-noMaskRight:]
+	middle := strings.Repeat(maskChar, sLen-len(leftStr)-len(rightStr))
+
+	masked = leftStr + middle + rightStr
+	return
 }
