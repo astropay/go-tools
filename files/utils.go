@@ -7,6 +7,7 @@ package files
 import (
 	"errors"
 	"os"
+	"path/filepath"
 )
 
 // File errors
@@ -47,4 +48,13 @@ func DeleteFile(path string) (err error) {
 	// delete file
 	err = os.Remove(path)
 	return
+}
+
+// GetAppPath returns the application absolute path
+func GetAppPath() string {
+	if dir, err := filepath.Abs(filepath.Dir(os.Args[0])); err == nil {
+		return dir
+	}
+
+	return ""
 }
