@@ -176,3 +176,22 @@ func TestGetParameterValues(t *testing.T) {
 		t.Errorf("GetParameterValues() should have returned an error")
 	}
 }
+
+// test cases for GetAllFields()
+func TestGetAllFields(t *testing.T) {
+
+	witnessStr := "id_user,name,email,address,password,city,country,active"
+
+	// test obj
+	user := new(User)
+
+	fieldList, err := GetAllFields(user)
+
+	if err != nil {
+		t.Error(err.Error())
+	} else {
+		if fieldList != witnessStr {
+			t.Logf("Expected: %s, Got: %s", witnessStr, fieldList)
+		}
+	}
+}
