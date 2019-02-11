@@ -63,7 +63,7 @@ func TestBuildUpdateSetQuery(t *testing.T) {
 // test cases for BuildParametrizedUpdateSetQuery()
 func TestBuildParametrizedUpdateSetQuery(t *testing.T) {
 
-	witnesUserStr := "SET password=?,id_user=?,country=?,active=?"
+	witnessUserStr := "SET password=?,id_user=?,country=?,active=?"
 
 	name := "Pepe"
 	email := "pepe@astropay.com"
@@ -84,7 +84,7 @@ func TestBuildParametrizedUpdateSetQuery(t *testing.T) {
 	dirtyFields := []string{"Password", "ID", "Country", "Active"}
 	builtSetStr, err := BuildParametrizedUpdateSetQuery(user, dirtyFields)
 	if err == nil {
-		if builtSetStr != witnesUserStr {
+		if builtSetStr != witnessUserStr {
 			t.Errorf("BuildParametrizedUpdateSetQuery() returned a wrong string: %s", builtSetStr)
 		}
 	} else {
@@ -96,6 +96,45 @@ func TestBuildParametrizedUpdateSetQuery(t *testing.T) {
 	_, err = BuildParametrizedUpdateSetQuery(user, dirtyFieldsInvalid)
 	if err == nil {
 		t.Errorf("BuildParametrizedUpdateSetQuery() should have returned an error")
+	}
+}
+
+// test cases for BuildNamedParametersUpdateSetQuery()
+func TestBuildNamedParamersUpdateSetQuery(t *testing.T) {
+
+	witnessUserStr := "SET password=:password,id_user=:id_user,country=:country,active=:active"
+
+	name := "Pepe"
+	email := "pepe@astropay.com"
+	password := "myhashedpassword"
+	country := "UY"
+
+	// test obj
+	user := User{
+		ID:       145,
+		Name:     &name,
+		Email:    &email,
+		Password: &password,
+		Country:  &country,
+		Active:   true,
+	}
+
+	// fields to update
+	dirtyFields := []string{"Password", "ID", "Country", "Active"}
+	builtSetStr, err := BuildNamedParametersUpdateSetQuery(user, dirtyFields)
+	if err == nil {
+		if builtSetStr != witnessUserStr {
+			t.Errorf("BuildNamedParametersUpdateSetQuery() returned a wrong string: %s", builtSetStr)
+		}
+	} else {
+		t.Errorf("BuildNamedParametersUpdateSetQuery() returned an error: %s", err.Error())
+	}
+
+	// fields to update with a wrong field
+	dirtyFieldsInvalid := []string{"Password", "Address", "ID", "Status"}
+	_, err = BuildNamedParametersUpdateSetQuery(user, dirtyFieldsInvalid)
+	if err == nil {
+		t.Errorf("BuildNamedParametersUpdateSetQuery() should have returned an error")
 	}
 }
 
