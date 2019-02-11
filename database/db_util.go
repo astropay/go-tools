@@ -124,6 +124,55 @@ func BuildParametrizedUpdateSetQuery(obj interface{}, fields []string) (string, 
 	return "", ErrInvalidFieldList
 }
 
+// BuildNamedParametersUpdateSetQuery returns a string that can be used to build a set query,
+// using named parameters (:param_name)
+func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (string, error) {
+
+	checkType := reflect.TypeOf(obj)
+
+	// obj must be struct or pointer to struct
+	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
+		return "", fmt.Errorf("Invalid obj type '%s'", checkType.Kind().String())
+	}
+
+	var objType reflect.Type
+	if checkType.Kind() == reflect.Ptr {
+		objType = checkType.Elem()
+	} else {
+		objType = checkType
+	}
+
+	if fields != nil && len(fields) > 0 {
+
+		// prepare sql
+		buf := new(bytes.Buffer)
+		buf.WriteString("SET ")
+
+		for i := 0; i < len(fields); i++ {
+			var (
+				field  reflect.StructField
+				exists bool
+			)
+
+			if field, exists = objType.FieldByName(fields[i]); exists {
+				colName := resolveColumnName(field)
+				buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
+			} else {
+				return "", fmt.Errorf("Invalid field '%s'", fields[i])
+			}
+
+			// add separator
+			if exists && i < len(fields)-1 {
+				buf.WriteString(",")
+			}
+		}
+
+		return buf.String(), nil
+	}
+
+	return "", ErrInvalidFieldList
+}
+
 // GetParameterValues returns an array that may be used in a parametrized query
 func GetParameterValues(obj interface{}, fields []string, args ...interface{}) ([]interface{}, error) {
 
