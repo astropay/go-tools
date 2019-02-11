@@ -173,7 +173,7 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 	return "", ErrInvalidFieldList
 }
 
-func GetAllFields(obj interface{}) (fieldList string, err error) {
+func GetAllFields(obj interface{}, quoted bool, asNamedParameter bool) (fieldList string, err error) {
 
 	checkType := reflect.TypeOf(obj)
 
@@ -199,7 +199,14 @@ func GetAllFields(obj interface{}) (fieldList string, err error) {
 		colName := resolveColumnName(fieldInstance)
 
 		if colName != "-" && colName != "" {
-			buf.WriteString(colName + ",")
+			if quoted {
+				buf.WriteString("`" + colName + "`" + ",")
+			} else if asNamedParameter {
+				buf.WriteString(":" + colName + ",")
+			} else {
+				buf.WriteString(colName + ",")
+			}
+
 		}
 	}
 

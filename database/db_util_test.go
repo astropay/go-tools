@@ -181,17 +181,39 @@ func TestGetParameterValues(t *testing.T) {
 func TestGetAllFields(t *testing.T) {
 
 	witnessStr := "id_user,name,email,address,password,city,country,active"
+	witnessStrQuoted := "`id_user`,`name`,`email`,`address`,`password`,`city`,`country`,`active`"
+	witnessStrNamedParam := ":id_user,:name,:email,:address,:password,:city,:country,:active"
 
 	// test obj
 	user := new(User)
 
-	fieldList, err := GetAllFields(user)
-
+	// normal
+	fieldList, err := GetAllFields(user, false, false)
 	if err != nil {
 		t.Error(err.Error())
 	} else {
 		if fieldList != witnessStr {
-			t.Logf("Expected: %s, Got: %s", witnessStr, fieldList)
+			t.Logf("expected: %s, Got: %s", witnessStr, fieldList)
+		}
+	}
+
+	// quoted
+	fieldListQuoted, errQuoted := GetAllFields(user, true, false)
+	if errQuoted != nil {
+		t.Error(errQuoted.Error())
+	} else {
+		if fieldListQuoted != witnessStrQuoted {
+			t.Logf("expected: %s, Got: %s", witnessStrQuoted, fieldListQuoted)
+		}
+	}
+
+	// named parameters
+	fieldListNamedParam, errNamed := GetAllFields(user, true, false)
+	if errNamed != nil {
+		t.Error(errNamed.Error())
+	} else {
+		if fieldListNamedParam != witnessStrNamedParam {
+			t.Logf("expected: %s, Got: %s", witnessStrNamedParam, fieldListNamedParam)
 		}
 	}
 }
