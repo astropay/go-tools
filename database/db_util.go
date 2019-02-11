@@ -83,7 +83,7 @@ func BuildParametrizedUpdateSetQuery(obj interface{}, fields []string) (string, 
 
 	// obj must be struct or pointer to struct
 	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
-		return "", fmt.Errorf("Invalid obj type '%s'", checkType.Kind().String())
+		return "", fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
 	}
 
 	var objType reflect.Type
@@ -109,7 +109,7 @@ func BuildParametrizedUpdateSetQuery(obj interface{}, fields []string) (string, 
 				colName := resolveColumnName(field)
 				buf.WriteString(fmt.Sprintf("%s=?", colName))
 			} else {
-				return "", fmt.Errorf("Invalid field '%s'", fields[i])
+				return "", fmt.Errorf("invalid field '%s'", fields[i])
 			}
 
 			// add separator
@@ -132,7 +132,7 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 
 	// obj must be struct or pointer to struct
 	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
-		return "", fmt.Errorf("Invalid obj type '%s'", checkType.Kind().String())
+		return "", fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
 	}
 
 	var objType reflect.Type
@@ -158,7 +158,7 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 				colName := resolveColumnName(field)
 				buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
 			} else {
-				return "", fmt.Errorf("Invalid field '%s'", fields[i])
+				return "", fmt.Errorf("invalid field '%s'", fields[i])
 			}
 
 			// add separator
@@ -173,6 +173,42 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 	return "", ErrInvalidFieldList
 }
 
+func GetAllFields(obj interface{}) (fieldList string, err error) {
+
+	checkType := reflect.TypeOf(obj)
+
+	// obj must be struct or pointer to struct
+	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
+		err = fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
+		return
+	}
+
+	var objType reflect.Type
+
+	if checkType.Kind() == reflect.Ptr {
+		objType = checkType.Elem()
+	} else {
+		objType = checkType
+	}
+
+	buf := new(bytes.Buffer)
+
+	// loop through all fields
+	for i := 0; i < objType.NumField(); i++ {
+		fieldInstance := objType.Field(i)
+		colName := resolveColumnName(fieldInstance)
+
+		if colName != "-" && colName != "" {
+			buf.WriteString(colName + ",")
+		}
+	}
+
+	fieldList = buf.String()
+	fieldList = fieldList[:len(fieldList)-1]
+
+	return
+}
+
 // GetParameterValues returns an array that may be used in a parametrized query
 func GetParameterValues(obj interface{}, fields []string, args ...interface{}) ([]interface{}, error) {
 
@@ -180,7 +216,7 @@ func GetParameterValues(obj interface{}, fields []string, args ...interface{}) (
 
 	// obj must be struct or pointer to struct
 	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("Invalid obj type '%s'", checkType.Kind().String())
+		return nil, fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
 	}
 
 	var objVal reflect.Value
@@ -222,7 +258,7 @@ func GetParameterValues(obj interface{}, fields []string, args ...interface{}) (
 				// add field value to array
 				params[i] = fieldValue
 			} else {
-				return nil, fmt.Errorf("Invalid field '%s'", fields[i])
+				return nil, fmt.Errorf("invalid field '%s'", fields[i])
 			}
 		}
 
