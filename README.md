@@ -1,4 +1,3 @@
-[![Build Status](https://drone.io/github.com/astropay/go-tools/status.png)](https://drone.io/github.com/astropay/go-tools/latest)
 [![Code Report](https://goreportcard.com/badge/github.com/astropay/go-tools)](https://goreportcard.com/report/github.com/astropay/go-tools)
 [![GoDoc](https://godoc.org/github.com/astropay/go-tools?status.svg)](http://godoc.org/github.com/astropay/go-tools)
 
@@ -10,5 +9,3 @@ reproducing everywhere, consider moving it here.
 ## Documentation
 
 Work in progress. Each package should have a README explaining what the heck is there, but well...you know, life is hard!
-
-

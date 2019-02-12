@@ -13,12 +13,16 @@ import (
 	"unsafe"
 )
 
-var letterAndNumberRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+var (
+	letterAndNumberRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
+	// email validation regular expression
+	emailRegEx = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+)
 
 // IsEmailAddress returns true if str seems to be an email address
 func IsEmailAddress(str string) bool {
-	reg := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	return reg.MatchString(str)
+	return emailRegEx.MatchString(str)
 }
 
 // UpdateStructFields() errors
@@ -121,4 +125,26 @@ func MaskString(s string, noMaskLeft, noMaskRight int, maskChar string) (masked 
 
 	masked = leftStr + middle + rightStr
 	return
+}
+
+// FindInStringArray searches for the indicated element 'elem' in array 'a'
+func FindInStringArray(elem string, a []string) (e string, found bool) {
+	for i := range a {
+		if a[i] == elem {
+			return elem, true
+		}
+	}
+
+	return "", false
+}
+
+// FindInIntgArray searches for the indicated element 'elem' in array 'a'
+func FindInIntgArray(elem int64, a []int64) (e int64, found bool) {
+	for i := range a {
+		if a[i] == elem {
+			return elem, true
+		}
+	}
+
+	return 0, false
 }

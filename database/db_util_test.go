@@ -183,37 +183,48 @@ func TestGetAllFields(t *testing.T) {
 	witnessStr := "id_user,name,email,address,password,city,country,active"
 	witnessStrQuoted := "`id_user`,`name`,`email`,`address`,`password`,`city`,`country`,`active`"
 	witnessStrNamedParam := ":id_user,:name,:email,:address,:password,:city,:country,:active"
+	witnessStrPartial := "name,email,address,city,country,active"
 
 	// test obj
 	user := new(User)
 
 	// normal
-	fieldList, err := GetAllFields(user, false, false)
+	fieldList, err := GetAllFields(user, nil, false, false)
 	if err != nil {
 		t.Error(err.Error())
 	} else {
 		if fieldList != witnessStr {
-			t.Logf("expected: %s, Got: %s", witnessStr, fieldList)
+			t.Logf("expected: %s, got: %s", witnessStr, fieldList)
 		}
 	}
 
 	// quoted
-	fieldListQuoted, errQuoted := GetAllFields(user, true, false)
+	fieldListQuoted, errQuoted := GetAllFields(user, nil, true, false)
 	if errQuoted != nil {
 		t.Error(errQuoted.Error())
 	} else {
 		if fieldListQuoted != witnessStrQuoted {
-			t.Logf("expected: %s, Got: %s", witnessStrQuoted, fieldListQuoted)
+			t.Logf("expected: %s, got: %s", witnessStrQuoted, fieldListQuoted)
 		}
 	}
 
 	// named parameters
-	fieldListNamedParam, errNamed := GetAllFields(user, true, false)
+	fieldListNamedParam, errNamed := GetAllFields(user, nil, true, false)
 	if errNamed != nil {
 		t.Error(errNamed.Error())
 	} else {
 		if fieldListNamedParam != witnessStrNamedParam {
-			t.Logf("expected: %s, Got: %s", witnessStrNamedParam, fieldListNamedParam)
+			t.Logf("expected: %s, got: %s", witnessStrNamedParam, fieldListNamedParam)
+		}
+	}
+
+	// omit fields
+	fieldListPartial, errOmit := GetAllFields(user, []string{"ID", "Password"}, false, false)
+	if errOmit != nil {
+		t.Error(errOmit.Error())
+	} else {
+		if fieldListPartial != witnessStrPartial {
+			t.Logf("expected: %s, got: %s", witnessStrPartial, fieldListPartial)
 		}
 	}
 }

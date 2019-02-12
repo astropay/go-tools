@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/astropay/go-tools/common"
 )
 
 // BuildUpdateSetQuery returns a string that can be used to build a set query, with
@@ -173,7 +175,16 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 	return "", ErrInvalidFieldList
 }
 
-func GetAllFields(obj interface{}, quoted bool, asNamedParameter bool) (fieldList string, err error) {
+// GetAllFields returns all the db configured fields for the indicated struct.
+//
+// Those fields indicated in 'omitFields' will not be included in the list; this is useful
+// when dealing with auto incremental fields.
+//
+// Flag 'quoted' makes all the fields to be wrapped as `field_name`; 'asNamedParameter' returns
+// all fields as :field_name, useful for named queries. Flags are exclusive, use one or the other.
+//
+// Note: those fields without the 'db' attribute or marked with a dash (`db:"-"`) are ignored.
+func GetAllFields(obj interface{}, omitFields []string, quoted bool, asNamedParameter bool) (fieldList string, err error) {
 
 	checkType := reflect.TypeOf(obj)
 
@@ -196,18 +207,23 @@ func GetAllFields(obj interface{}, quoted bool, asNamedParameter bool) (fieldLis
 	// loop through all fields
 	for i := 0; i < objType.NumField(); i++ {
 		fieldInstance := objType.Field(i)
-		colName := resolveColumnName(fieldInstance)
 
-		if colName != "-" && colName != "" {
-			if quoted {
-				buf.WriteString("`" + colName + "`" + ",")
-			} else if asNamedParameter {
-				buf.WriteString(":" + colName + ",")
-			} else {
-				buf.WriteString(colName + ",")
+		if _, found := common.FindInStringArray(fieldInstance.Name, omitFields); !found {
+
+			colName := resolveColumnName(fieldInstance)
+
+			if colName != "-" && colName != "" {
+				if quoted {
+					buf.WriteString("`" + colName + "`" + ",")
+				} else if asNamedParameter {
+					buf.WriteString(":" + colName + ",")
+				} else {
+					buf.WriteString(colName + ",")
+				}
 			}
 
 		}
+
 	}
 
 	fieldList = buf.String()
