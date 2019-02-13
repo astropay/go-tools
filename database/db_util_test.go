@@ -252,7 +252,7 @@ func TestGetChangedFields(t *testing.T) {
 	newPass := "s3cr3!"
 	userNew := User{ID: 145, Name: &name, Email: &email, Password: &newPass, Address: &address, City: &city, Country: &country, Active: true}
 
-	fieldList, _ := GetChangedFields(userOriginal, userNew)
+	fieldList, _ := GetChangedFields(userOriginal, nil, userNew)
 	if len(fieldList) != 1 {
 		t.Errorf("field list should have 1 element and has %v", len(fieldList))
 	} else {
