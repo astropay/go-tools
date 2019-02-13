@@ -301,7 +301,7 @@ func GetParameterValues(obj interface{}, fields []string, args ...interface{}) (
 
 // GetChangedFields compare the fieles from source and destination and returns
 // the list of fields that have been changed
-func GetChangedFields(original interface{}, new interface{}) (fields []string, err error) {
+func GetChangedFields(original interface{}, omitFields []string, new interface{}) (fields []string, err error) {
 
 	originalType := reflect.TypeOf(original)
 	newType := reflect.TypeOf(new)
@@ -337,46 +337,48 @@ func GetChangedFields(original interface{}, new interface{}) (fields []string, e
 
 		fieldInstance := originalType.Field(i)
 
-		originalField := originalVal.Field(i)
-		newField := newVal.Field(i)
+		if _, found := common.FindInStringArray(fieldInstance.Name, omitFields); !found {
 
-		var (
-			originalFieldValue, newFieldValue interface{}
-		)
+			originalField := originalVal.Field(i)
+			newField := newVal.Field(i)
 
-		// println(fieldInstance.Name, fieldInstance.Type.Kind().String())
+			var (
+				originalFieldValue, newFieldValue interface{}
+			)
 
-		if originalVal.Kind() == reflect.Ptr {
+			if originalVal.Kind() == reflect.Ptr {
 
-			ov := originalField.Elem()
-			if !ov.IsValid() {
-				originalFieldValue = originalField.Elem().Interface()
+				ov := originalField.Elem()
+				if !ov.IsValid() {
+					originalFieldValue = originalField.Elem().Interface()
+				}
+
+				nv := newField.Elem()
+				if !nv.IsValid() {
+					newFieldValue = newField.Elem().Interface()
+				}
+
+			} else {
+				originalFieldValue = originalField.Interface()
+				newFieldValue = newField.Interface()
 			}
 
-			nv := newField.Elem()
-			if !nv.IsValid() {
-				newFieldValue = newField.Elem().Interface()
-			}
-
-		} else {
-			originalFieldValue = originalField.Interface()
-			newFieldValue = newField.Interface()
-		}
-
-		if originalFieldValue != nil {
-			if newFieldValue != nil {
-				if !reflect.DeepEqual(originalFieldValue, newFieldValue) {
+			if originalFieldValue != nil {
+				if newFieldValue != nil {
+					if !reflect.DeepEqual(originalFieldValue, newFieldValue) {
+						if fieldName := resolveColumnName(fieldInstance); fieldName != "" {
+							fields = append(fields, fieldName)
+						}
+					}
+				}
+			} else {
+				if newFieldValue != nil {
 					if fieldName := resolveColumnName(fieldInstance); fieldName != "" {
 						fields = append(fields, fieldName)
 					}
 				}
 			}
-		} else {
-			if newFieldValue != nil {
-				if fieldName := resolveColumnName(fieldInstance); fieldName != "" {
-					fields = append(fields, fieldName)
-				}
-			}
+
 		}
 
 	}
