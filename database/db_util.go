@@ -2,6 +2,7 @@ package database
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -17,7 +18,7 @@ func BuildUpdateSetQuery(obj interface{}, fields []string) (string, error) {
 
 	// obj must be struct or pointer to struct
 	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
-		return "", fmt.Errorf("Invalid obj type '%s'", checkType.Kind().String())
+		return "", fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
 	}
 
 	var objVal reflect.Value
@@ -62,7 +63,7 @@ func BuildUpdateSetQuery(obj interface{}, fields []string) (string, error) {
 				// create field=value string
 				buf.WriteString(fmt.Sprintf(buildFieldSet(colType), colName, fieldValue))
 			} else {
-				return "", fmt.Errorf("Invalid field '%s'", fields[i])
+				return "", fmt.Errorf("invalid field '%s'", fields[i])
 			}
 
 			// add separator
@@ -223,7 +224,6 @@ func GetAllFields(obj interface{}, omitFields []string, quoted bool, asNamedPara
 			}
 
 		}
-
 	}
 
 	fieldList = buf.String()
@@ -299,6 +299,91 @@ func GetParameterValues(obj interface{}, fields []string, args ...interface{}) (
 	return nil, ErrInvalidFieldList
 }
 
+// GetChangedFields compare the fieles from source and destination and returns
+// the list of fields that have been changed
+func GetChangedFields(original interface{}, new interface{}) (fields []string, err error) {
+
+	originalType := reflect.TypeOf(original)
+	newType := reflect.TypeOf(new)
+
+	// check both types are the same
+	if newType.Name() != newType.Name() {
+		err = errors.New("source and destination are not of the same type")
+		return
+	}
+
+	// must be struct or pointer to struct
+	if originalType.Kind() != reflect.Ptr && originalType.Kind() != reflect.Struct {
+		err = fmt.Errorf("invalid obj type '%s'", originalType.Kind().String())
+		return
+	}
+
+	var (
+		originalVal, newVal reflect.Value
+	)
+
+	fields = make([]string, 0)
+
+	if originalType.Kind() == reflect.Ptr {
+		originalVal = reflect.ValueOf(original).Elem()
+		newVal = reflect.ValueOf(new).Elem()
+	} else {
+		originalVal = reflect.ValueOf(original)
+		newVal = reflect.ValueOf(new)
+	}
+
+	// loop through all fields
+	for i := 0; i < originalType.NumField(); i++ {
+
+		fieldInstance := originalType.Field(i)
+
+		originalField := originalVal.Field(i)
+		newField := newVal.Field(i)
+
+		var (
+			originalFieldValue, newFieldValue interface{}
+		)
+
+		// println(fieldInstance.Name, fieldInstance.Type.Kind().String())
+
+		if originalVal.Kind() == reflect.Ptr {
+
+			ov := originalField.Elem()
+			if !ov.IsValid() {
+				originalFieldValue = originalField.Elem().Interface()
+			}
+
+			nv := newField.Elem()
+			if !nv.IsValid() {
+				newFieldValue = newField.Elem().Interface()
+			}
+
+		} else {
+			originalFieldValue = originalField.Interface()
+			newFieldValue = newField.Interface()
+		}
+
+		if originalFieldValue != nil {
+			if newFieldValue != nil {
+				if !reflect.DeepEqual(originalFieldValue, newFieldValue) {
+					if fieldName := resolveColumnName(fieldInstance); fieldName != "" {
+						fields = append(fields, fieldName)
+					}
+				}
+			}
+		} else {
+			if newFieldValue != nil {
+				if fieldName := resolveColumnName(fieldInstance); fieldName != "" {
+					fields = append(fields, fieldName)
+				}
+			}
+		}
+
+	}
+
+	return
+}
+
 func buildFieldSet(dbType DBType) string {
 	// format strings used to build sentences
 	quotedFormat := "`%s`='%v'"
@@ -317,7 +402,7 @@ func buildFieldSet(dbType DBType) string {
 // resolves the column name associated to a struct's field;
 // tag 'db' is used for compatibility with "github.com/jmoiron/sqlx"
 func resolveColumnName(field reflect.StructField) (col string) {
-	if dbColumn := field.Tag.Get("db"); dbColumn != "" {
+	if dbColumn := field.Tag.Get("db"); dbColumn != "" && dbColumn != "-" {
 		col = dbColumn
 	} else {
 		// TODO: it would be great to use camel case for field names and 'automagically'
