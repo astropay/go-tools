@@ -252,7 +252,41 @@ func TestGetChangedFields(t *testing.T) {
 	newPass := "s3cr3!"
 	userNew := User{ID: 145, Name: &name, Email: &email, Password: &newPass, Address: &address, City: &city, Country: &country, Active: true}
 
-	fieldList, _ := GetChangedFields(userOriginal, nil, userNew)
+	fieldList, _ := GetChangedFields(userOriginal, userNew, nil)
+	if len(fieldList) != 1 {
+		t.Errorf("field list should have 1 element and has %v", len(fieldList))
+	} else {
+		if fieldList[0] != "password" {
+			t.Errorf("expected list element: '%s', got: '%v'", "password", fieldList[0])
+		}
+	}
+
+}
+
+func TestGetChangedFieldsWithPointers(t *testing.T) {
+
+	name := "Pepe"
+	email := "pepe@astropay.com"
+	password := "myhashedpassword"
+	address := "Luis Bonavita 1122"
+	city := "Montevideo"
+	country := "UY"
+
+	userOriginal := &User{
+		ID:       145,
+		Name:     &name,
+		Email:    &email,
+		Password: &password,
+		Address:  &address,
+		City:     &city,
+		Country:  &country,
+		Active:   true,
+	}
+
+	newPass := "s3cr3!"
+	userNew := &User{ID: 145, Name: &name, Email: &email, Password: &newPass, Address: &address, City: &city, Country: &country, Active: true}
+
+	fieldList, _ := GetChangedFields(userOriginal, userNew, nil)
 	if len(fieldList) != 1 {
 		t.Errorf("field list should have 1 element and has %v", len(fieldList))
 	} else {

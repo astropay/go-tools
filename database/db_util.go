@@ -178,14 +178,14 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 
 // GetAllFields returns all the db configured fields for the indicated struct.
 //
-// Those fields indicated in 'omitFields' will not be included in the list; this is useful
+// Those fields indicated in 'skipFields' will not be included in the list; this is useful
 // when dealing with auto incremental fields.
 //
 // Flag 'quoted' makes all the fields to be wrapped as `field_name`; 'asNamedParameter' returns
 // all fields as :field_name, useful for named queries. Flags are exclusive, use one or the other.
 //
 // Note: those fields without the 'db' attribute or marked with a dash (`db:"-"`) are ignored.
-func GetAllFields(obj interface{}, omitFields []string, quoted bool, asNamedParameter bool) (fieldList string, err error) {
+func GetAllFields(obj interface{}, skipFields []string, quoted bool, asNamedParameter bool) (fieldList string, err error) {
 
 	checkType := reflect.TypeOf(obj)
 
@@ -209,7 +209,7 @@ func GetAllFields(obj interface{}, omitFields []string, quoted bool, asNamedPara
 	for i := 0; i < objType.NumField(); i++ {
 		fieldInstance := objType.Field(i)
 
-		if _, found := common.FindInStringArray(fieldInstance.Name, omitFields); !found {
+		if _, found := common.FindInStringArray(fieldInstance.Name, skipFields); !found {
 
 			colName := resolveColumnName(fieldInstance)
 
@@ -301,7 +301,7 @@ func GetParameterValues(obj interface{}, fields []string, args ...interface{}) (
 
 // GetChangedFields compare the fieles from source and destination and returns
 // the list of fields that have been changed
-func GetChangedFields(original interface{}, omitFields []string, new interface{}) (fields []string, err error) {
+func GetChangedFields(original interface{}, new interface{}, skipFields []string) (fields []string, err error) {
 
 	originalType := reflect.TypeOf(original)
 	newType := reflect.TypeOf(new)
@@ -333,11 +333,11 @@ func GetChangedFields(original interface{}, omitFields []string, new interface{}
 	}
 
 	// loop through all fields
-	for i := 0; i < originalType.NumField(); i++ {
+	for i := 0; i < originalVal.NumField(); i++ {
 
-		fieldInstance := originalType.Field(i)
+		fieldInstance := originalVal.Type().Field(i)
 
-		if _, found := common.FindInStringArray(fieldInstance.Name, omitFields); !found {
+		if _, found := common.FindInStringArray(fieldInstance.Name, skipFields); !found {
 
 			originalField := originalVal.Field(i)
 			newField := newVal.Field(i)
@@ -380,7 +380,6 @@ func GetChangedFields(original interface{}, omitFields []string, new interface{}
 			}
 
 		}
-
 	}
 
 	return
