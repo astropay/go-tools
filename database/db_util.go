@@ -337,6 +337,8 @@ func GetChangedFields(original interface{}, new interface{}, skipFields []string
 
 		fieldInstance := originalVal.Type().Field(i)
 
+		// println(fieldInstance.Type.Name())
+
 		if _, found := common.FindInStringArray(fieldInstance.Name, skipFields); !found {
 
 			originalField := originalVal.Field(i)
@@ -347,17 +349,8 @@ func GetChangedFields(original interface{}, new interface{}, skipFields []string
 			)
 
 			if originalVal.Kind() == reflect.Ptr {
-
-				ov := originalField.Elem()
-				if !ov.IsValid() {
-					originalFieldValue = originalField.Elem().Interface()
-				}
-
-				nv := newField.Elem()
-				if !nv.IsValid() {
-					newFieldValue = newField.Elem().Interface()
-				}
-
+				originalFieldValue = originalField.Elem().Interface()
+				newFieldValue = newField.Elem().Interface()
 			} else {
 				originalFieldValue = originalField.Interface()
 				newFieldValue = newField.Interface()

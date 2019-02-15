@@ -148,3 +148,48 @@ func FindInIntgArray(elem int64, a []int64) (e int64, found bool) {
 
 	return 0, false
 }
+
+// GetNonNullFields returns an array with all the fields that
+// aren't nil in the structure's instance
+func GetNonNullFields(i interface{}, tagName string) (fields []string) {
+
+	var e reflect.Value
+	v := reflect.ValueOf(i)
+
+	if v.Kind() == reflect.Struct {
+		e = v
+	} else if v.Kind() == reflect.Ptr {
+		e = v.Elem()
+	}
+
+	for f := 0; f < e.NumField(); f++ {
+		process := false
+		fieldInstance := e.Type().Field(f)
+		fieldKind := e.Type().Kind()
+
+		// skip structs and pointers to structs
+		switch fieldKind {
+		case reflect.Ptr:
+			if e.Field(f).Elem().Kind() != reflect.Struct {
+				process = true
+			}
+		default:
+			process = true
+		}
+
+		if process {
+			if !e.Field(f).IsNil() {
+				if tagName != "" {
+					if jsonTag := fieldInstance.Tag.Get(tagName); jsonTag != "" && jsonTag != "-" {
+						fieldName := strings.Split(jsonTag, ",")[0]
+						fields = append(fields, fieldName)
+					}
+				} else {
+					fields = append(fields, fieldInstance.Name)
+				}
+			}
+		}
+	}
+
+	return
+}

@@ -194,7 +194,7 @@ func TestGetAllFields(t *testing.T) {
 		t.Error(err.Error())
 	} else {
 		if fieldList != witnessStr {
-			t.Logf("expected: %s, got: %s", witnessStr, fieldList)
+			t.Errorf("expected: %s, got: %s", witnessStr, fieldList)
 		}
 	}
 
@@ -204,17 +204,17 @@ func TestGetAllFields(t *testing.T) {
 		t.Error(errQuoted.Error())
 	} else {
 		if fieldListQuoted != witnessStrQuoted {
-			t.Logf("expected: %s, got: %s", witnessStrQuoted, fieldListQuoted)
+			t.Errorf("expected: %s, got: %s", witnessStrQuoted, fieldListQuoted)
 		}
 	}
 
 	// named parameters
-	fieldListNamedParam, errNamed := GetAllFields(user, nil, true, false)
+	fieldListNamedParam, errNamed := GetAllFields(user, nil, false, true)
 	if errNamed != nil {
 		t.Error(errNamed.Error())
 	} else {
 		if fieldListNamedParam != witnessStrNamedParam {
-			t.Logf("expected: %s, got: %s", witnessStrNamedParam, fieldListNamedParam)
+			t.Errorf("expected: %s, got: %s", witnessStrNamedParam, fieldListNamedParam)
 		}
 	}
 
@@ -224,7 +224,7 @@ func TestGetAllFields(t *testing.T) {
 		t.Error(errOmit.Error())
 	} else {
 		if fieldListPartial != witnessStrPartial {
-			t.Logf("expected: %s, got: %s", witnessStrPartial, fieldListPartial)
+			t.Errorf("expected: %s, got: %s", witnessStrPartial, fieldListPartial)
 		}
 	}
 }
@@ -284,7 +284,8 @@ func TestGetChangedFieldsWithPointers(t *testing.T) {
 	}
 
 	newPass := "s3cr3!"
-	userNew := &User{ID: 145, Name: &name, Email: &email, Password: &newPass, Address: &address, City: &city, Country: &country, Active: true}
+	sameName := "Pepe"
+	userNew := &User{ID: 145, Name: &sameName, Email: &email, Password: &newPass, Address: &address, City: &city, Country: &country, Active: true}
 
 	fieldList, _ := GetChangedFields(userOriginal, userNew, nil)
 	if len(fieldList) != 1 {
