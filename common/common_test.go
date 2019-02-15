@@ -95,3 +95,30 @@ func TestRandom(t *testing.T) {
 	}
 
 }
+
+func TestGetNonNullFields(t *testing.T) {
+
+	type user struct {
+		ID       *int    `db:"id_user"`
+		Name     *string `db:"name" db_type:"varchar"`
+		Email    *string `db:"email" db_type:"varchar"`
+		Address  *string `db:"address" db_type:"varchar"`
+		Password *string `db:"password" db_type:"varchar"`
+		City     *string
+		Country  *string `db_type:"varchar"`
+		Active   *bool   `db_type:"boolean"`
+	}
+
+	id := 123
+	name := "Pepe"
+
+	u := new(user)
+	u.ID = &id
+	u.Name = &name
+
+	fields := GetNonNullFields(u, "db")
+	if len(fields) != 2 {
+		t.Errorf("expected 2 elements on the array, got %v", len(fields))
+	}
+
+}
