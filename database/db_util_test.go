@@ -160,21 +160,20 @@ func TestBuildNamedParamersUpdateSetQuery2(t *testing.T) {
 
 	// fields to update
 	dirtyFields := []string{"password", "id_user", "country", "active"}
-	builtSetStr, err := BuildNamedParametersUpdateSetQueryV2(user, dirtyFields)
+	builtSetStr, fields, err := BuildNamedParametersUpdateSetQueryV2(user, dirtyFields)
 	if err == nil {
 		if builtSetStr != witnessUserStr {
 			t.Errorf("BuildNamedParametersUpdateSetQueryV2() returned a wrong string: %s", builtSetStr)
+			t.FailNow()
+		}
+
+		if len(fields) != len(dirtyFields) {
+			t.Errorf("BuildNamedParametersUpdateSetQueryV2() returned %v changed fields, expected %v", len(fields), len(dirtyFields))
 		}
 	} else {
 		t.Errorf("BuildNamedParametersUpdateSetQueryV2() returned an error: %s", err.Error())
 	}
 
-	// fields to update with a wrong field
-	dirtyFieldsInvalid := []string{"password", "address", "id"}
-	_, err = BuildNamedParametersUpdateSetQueryV2(user, dirtyFieldsInvalid)
-	if err == nil {
-		t.Errorf("BuildNamedParametersUpdateSetQueryV2() should have returned an error")
-	}
 }
 
 // test cases for GetParameterValues()
