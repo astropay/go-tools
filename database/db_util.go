@@ -176,6 +176,67 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 	return "", ErrInvalidFieldList
 }
 
+// BuildNamedParametersUpdateSetQueryV2 returns a string that can be used to build a set query,
+// using named parameters (:param_name). This new version uses tag name, instead of struct's field
+// name to compare.
+func BuildNamedParametersUpdateSetQueryV2(obj interface{}, fields []string, compareWithTag bool) (string, error) {
+
+	checkType := reflect.TypeOf(obj)
+
+	// obj must be struct or pointer to struct
+	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
+		return "", fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
+	}
+
+	var objType reflect.Type
+	if checkType.Kind() == reflect.Ptr {
+		objType = checkType.Elem()
+	} else {
+		objType = checkType
+	}
+
+	if fields != nil && len(fields) > 0 {
+
+		// prepare sql
+		buf := new(bytes.Buffer)
+		buf.WriteString("SET ")
+
+		for i := 0; i < len(fields); i++ {
+			var (
+				field  reflect.StructField
+				exists bool
+			)
+
+			// compare using tag name or field name
+			if !compareWithTag {
+				if field, exists = objType.FieldByName(fields[i]); exists {
+					colName := resolveColumnName(field)
+					buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
+				} else {
+					return "", fmt.Errorf("invalid field '%s'", fields[i])
+				}
+			} else {
+				colName := resolveColumnName(field)
+				if colName == fields[i] {
+					colName := resolveColumnName(field)
+					buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
+				} else {
+					return "", fmt.Errorf("invalid field '%s'", fields[i])
+				}
+			}
+
+			// add separator
+			if exists && i < len(fields)-1 {
+				buf.WriteString(",")
+			}
+		}
+
+		return buf.String(), nil
+	}
+
+	return "", ErrInvalidFieldList
+}
+
 // GetAllFields returns all the db configured fields for the indicated struct.
 //
 // Those fields indicated in 'skipFields' will not be included in the list; this is useful
