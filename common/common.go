@@ -160,6 +160,9 @@ func GetNonNullFields(i interface{}, tagName string) (fields []string) {
 		e = v
 	} else if v.Kind() == reflect.Ptr {
 		e = v.Elem()
+	} else {
+		// non applicable
+		return
 	}
 
 	for f := 0; f < e.NumField(); f++ {
