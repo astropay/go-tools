@@ -179,7 +179,7 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 // BuildNamedParametersUpdateSetQueryV2 returns a string that can be used to build a set query,
 // using named parameters (:param_name). This new version uses tag name, instead of struct's field
 // name to compare.
-func BuildNamedParametersUpdateSetQueryV2(obj interface{}, fields []string, compareWithTag bool) (string, error) {
+func BuildNamedParametersUpdateSetQueryV2(obj interface{}, fields []string) (string, error) {
 
 	checkType := reflect.TypeOf(obj)
 
@@ -200,38 +200,27 @@ func BuildNamedParametersUpdateSetQueryV2(obj interface{}, fields []string, comp
 		// prepare sql
 		buf := new(bytes.Buffer)
 		buf.WriteString("SET ")
+		fieldCount := 0
 
-		for i := 0; i < len(fields); i++ {
-			var (
-				field  reflect.StructField
-				exists bool
-			)
+		// loop through all fields
+		for i := 0; i < objType.NumField(); i++ {
+			fieldInstance := objType.Field(i)
+			colName := resolveColumnName(fieldInstance)
 
-			// compare using tag name or field name
-			if !compareWithTag {
-				if field, exists = objType.FieldByName(fields[i]); exists {
-					colName := resolveColumnName(field)
-					buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
-				} else {
-					return "", fmt.Errorf("invalid field '%s'", fields[i])
-				}
-			} else {
-				colName := resolveColumnName(field)
-				if colName == fields[i] {
-					colName := resolveColumnName(field)
-					buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
-				} else {
-					return "", fmt.Errorf("invalid field '%s'", fields[i])
-				}
-			}
-
-			// add separator
-			if exists && i < len(fields)-1 {
+			if _, found := common.FindInStringArray(colName, fields); found {
+				buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
+				fieldCount++
 				buf.WriteString(",")
 			}
 		}
 
-		return buf.String(), nil
+		// check if all fields were present
+		if fieldCount < len(fields) {
+			return "", fmt.Errorf("one or more fields could not be matched")
+		}
+
+		sql := buf.String()
+		return sql[:len(sql)-1], nil
 	}
 
 	return "", ErrInvalidFieldList

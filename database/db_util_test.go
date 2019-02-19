@@ -138,6 +138,45 @@ func TestBuildNamedParamersUpdateSetQuery(t *testing.T) {
 	}
 }
 
+// test cases for BuildNamedParametersUpdateSetQuery2()
+func TestBuildNamedParamersUpdateSetQuery2(t *testing.T) {
+
+	witnessUserStr := "SET id_user=:id_user,password=:password,country=:country,active=:active"
+
+	name := "Pepe"
+	email := "pepe@astropay.com"
+	password := "myhashedpassword"
+	country := "UY"
+
+	// test obj
+	user := User{
+		ID:       145,
+		Name:     &name,
+		Email:    &email,
+		Password: &password,
+		Country:  &country,
+		Active:   true,
+	}
+
+	// fields to update
+	dirtyFields := []string{"password", "id_user", "country", "active"}
+	builtSetStr, err := BuildNamedParametersUpdateSetQueryV2(user, dirtyFields)
+	if err == nil {
+		if builtSetStr != witnessUserStr {
+			t.Errorf("BuildNamedParametersUpdateSetQueryV2() returned a wrong string: %s", builtSetStr)
+		}
+	} else {
+		t.Errorf("BuildNamedParametersUpdateSetQueryV2() returned an error: %s", err.Error())
+	}
+
+	// fields to update with a wrong field
+	dirtyFieldsInvalid := []string{"password", "address", "id"}
+	_, err = BuildNamedParametersUpdateSetQueryV2(user, dirtyFieldsInvalid)
+	if err == nil {
+		t.Errorf("BuildNamedParametersUpdateSetQueryV2() should have returned an error")
+	}
+}
+
 // test cases for GetParameterValues()
 func TestGetParameterValues(t *testing.T) {
 
