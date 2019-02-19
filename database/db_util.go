@@ -179,16 +179,19 @@ func BuildNamedParametersUpdateSetQuery(obj interface{}, fields []string) (strin
 // BuildNamedParametersUpdateSetQueryV2 returns a string that can be used to build a set query,
 // using named parameters (:param_name). This new version uses tag name, instead of struct's field
 // name to compare.
-func BuildNamedParametersUpdateSetQueryV2(obj interface{}, fields []string) (string, error) {
+func BuildNamedParametersUpdateSetQueryV2(obj interface{}, fields []string) (string, []string, error) {
 
 	checkType := reflect.TypeOf(obj)
 
 	// obj must be struct or pointer to struct
 	if checkType.Kind() != reflect.Ptr && checkType.Kind() != reflect.Struct {
-		return "", fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
+		return "", nil, fmt.Errorf("invalid obj type '%s'", checkType.Kind().String())
 	}
 
-	var objType reflect.Type
+	var (
+		objType        reflect.Type
+		finalFieldList []string
+	)
 	if checkType.Kind() == reflect.Ptr {
 		objType = checkType.Elem()
 	} else {
@@ -209,21 +212,18 @@ func BuildNamedParametersUpdateSetQueryV2(obj interface{}, fields []string) (str
 
 			if _, found := common.FindInStringArray(colName, fields); found {
 				buf.WriteString(fmt.Sprintf("%s=:%s", colName, colName))
-				fieldCount++
 				buf.WriteString(",")
+
+				fieldCount++
+				finalFieldList = append(finalFieldList, colName)
 			}
 		}
 
-		// check if all fields were present
-		if fieldCount < len(fields) {
-			return "", fmt.Errorf("one or more fields could not be matched")
-		}
-
 		sql := buf.String()
-		return sql[:len(sql)-1], nil
+		return sql[:len(sql)-1], finalFieldList, nil
 	}
 
-	return "", ErrInvalidFieldList
+	return "", nil, ErrInvalidFieldList
 }
 
 // GetAllFields returns all the db configured fields for the indicated struct.
