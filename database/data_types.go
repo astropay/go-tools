@@ -16,5 +16,5 @@ const (
 
 // Database util errors
 var (
-	ErrInvalidFieldList = errors.New("Invalid field list")
+	ErrInvalidFieldList = errors.New("invalid field list")
 )
