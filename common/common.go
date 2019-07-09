@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 	"unsafe"
 )
 
@@ -18,6 +19,8 @@ var (
 
 	// email validation regular expression
 	emailRegEx = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+
+	randomGenerator = rand.New(rand.NewSource(time.Now().Unix()))
 )
 
 // IsEmailAddress returns true if str seems to be an email address
