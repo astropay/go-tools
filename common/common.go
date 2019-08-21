@@ -85,10 +85,8 @@ func UpdateStructFromMap(destination interface{}, source map[string]interface{})
 }
 
 // Random generates a random number between min and max.
-// Keep in mind that random seed must be initialized before. Example:
-// 		rand.Seed(time.Now().Unix())
 func Random(min, max int) int {
-	return rand.Intn(max-min) + min
+	return randomGenerator.Intn(max-min) + min
 }
 
 // RandomString generates a random string of the specified length.
@@ -97,7 +95,7 @@ func Random(min, max int) int {
 func RandomString(n int) string {
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = letterAndNumberRunes[rand.Intn(len(letterAndNumberRunes))]
+		b[i] = letterAndNumberRunes[randomGenerator.Intn(len(letterAndNumberRunes))]
 	}
 	return string(b)
 }
