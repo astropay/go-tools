@@ -3,8 +3,7 @@ package datasource
 import (
 	"errors"
 
-	"github.com/astropay/go-tools/datasource/mysql"
-	"github.com/astropay/go-tools/datasource/sqlite3"
+	"github.com/astropay/go-tools/nrdatasource/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -26,7 +25,6 @@ type DBAccess interface {
 // Generic is the generic data access implementation for `DBAccess` interface.
 // Drivers currently supported:
 // - mysql
-// - sqlite3
 //
 type Generic struct {
 	db           *sqlx.DB
@@ -65,23 +63,6 @@ func (g *Generic) New(config DBConfig) (db *sqlx.DB, err error) {
 		g.db = db
 		g.canLock = true
 		g.randFuncName = mysql.RandFuncName()
-
-	case "sqlite3":
-		db, err = sqlite3.Init(config.DBName)
-
-		// ping DB to check if it's OK
-		if err = db.Ping(); err != nil {
-			return
-		}
-
-		// if exists a DB, close it
-		if g.db != nil {
-			g.db.Close()
-		}
-
-		g.db = db
-		g.canLock = false
-		g.randFuncName = sqlite3.RandFuncName()
 
 	default:
 		return nil, ErrDriverNotSupported
