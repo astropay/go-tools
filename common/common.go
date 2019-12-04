@@ -18,7 +18,8 @@ var (
 	letterAndNumberRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
 	// email validation regular expression
-	emailRegEx = regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`)
+	// emailRegEx = regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`)
+	emailRegEx = regexp.MustCompile("^[a-z0-9](\\.?[a-z0-9_-]){0,}@[a-z0-9-]+\\.([a-z]{1,6}\\.)?[a-z]{2,6}$")
 
 	randomGenerator = rand.New(rand.NewSource(time.Now().Unix()))
 )
@@ -30,7 +31,7 @@ func IsEmailAddress(str string) bool {
 
 // UpdateStructFields() errors
 var (
-	ErrNotStruct = errors.New("Destination must by struct or a pointer to struct")
+	ErrNotStruct = errors.New("destination must by struct or a pointer to struct")
 )
 
 // UpdateStructFromMap can be used to update the fields of a structure by sending
