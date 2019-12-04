@@ -20,6 +20,11 @@ func TestIsEmailAddress(t *testing.T) {
 		t.Errorf("'%s' is a valid email address", isEmail)
 	}
 
+	isEmail2 := "jogos.apostas606@gmail.com"
+	if valid := IsEmailAddress(isEmail2); !valid {
+		t.Errorf("'%s' is a valid email address", isEmail2)
+	}
+
 	notEmail := "just a normal string"
 	if valid := IsEmailAddress(notEmail); valid {
 		t.Errorf("'%s' is not a valid address", notEmail)
